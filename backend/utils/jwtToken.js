@@ -1,4 +1,5 @@
 // create token and saving that in cookies
+// sendToken that is responsible for creating a JSON Web Token (JWT) and saving it as a cookie in the HTTP response.
 const sendToken = (user, statusCode, res) => {
   const token = user.getJwtToken();
 
