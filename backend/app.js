@@ -5,15 +5,16 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const path = require("path");
-
 app.use(cors({
-  origin: 'https://shop-dot.vercel.app/',
-  credentials: true
+  origin: 'https://shop-dot.vercel.app',
+  credentials: true,
+  optionsSuccessStatus: 204, // 204 No Content is a common choice
 }));
+
 
 app.use(express.json());
 app.use(cookieParser());
-app.use("/", express.static(path.join(__dirname,"./uploads")));
+app.use("/", express.static(path.join(__dirname, "./uploads")));
 app.use("/test", (req, res) => {
   res.send("Hello world!");
 });
