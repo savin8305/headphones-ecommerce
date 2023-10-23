@@ -7,7 +7,7 @@ const cors = require("cors");
 const path = require("path");
 
 app.use(cors({
-  origin: 'https://shop-dot.vercel.app/',
+  origin:['https://shop-dot.vercel.app/'],
   credentials: true
 }));
 
