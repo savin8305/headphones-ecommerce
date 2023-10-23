@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   AiFillHeart,
   AiOutlineEye,
@@ -6,14 +6,18 @@ import {
   AiOutlineShoppingCart,
 } from "react-icons/ai";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import Ratings from "../../Products/Ratings";
 import { backend_url } from "../../../server";
 import styles from "../../../styles/styles";
+import { useDispatch, useSelector } from "react-redux";
 import ProductDetailsCard from "../ProductDetailsCard/ProductDetailsCard";
-import { addToWishlist, removeFromWishlist } from "../../../redux/actions/wishlist";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../../../redux/actions/wishlist";
+import { useEffect } from "react";
 import { addTocart } from "../../../redux/actions/cart";
+import { toast } from "react-toastify";
+import Ratings from "../../Products/Ratings";
 
 const ProductCard = ({ data, isEvent }) => {
   const { wishlist } = useSelector((state) => state.wishlist);
@@ -24,34 +28,38 @@ const ProductCard = ({ data, isEvent }) => {
 
   // Check if item is in the wishlist
   useEffect(() => {
-    const isWishlistItem = wishlist && wishlist.some((item) => item._id === data._id);
-    setClick(isWishlistItem);
-  }, [wishlist, data._id]);
+    if (wishlist && wishlist.find((i) => i._id === data._id)) {
+      setClick(true);
+    } else {
+      setClick(false);
+    }
+  }, [wishlist]);
 
   // Remove item from wishlist
-  const removeFromWishlistHandler = (product) => {
-    setClick(false);
-    dispatch(removeFromWishlist(product));
+  const removeFromWishlistHandler = (data) => {
+    setClick(!click);
+    dispatch(removeFromWishlist(data));
   };
 
   // Add item to wishlist
-  const addToWishlistHandler = (product) => {
-    setClick(true);
-    dispatch(addToWishlist(product));
+  const addToWishlistHandler = (data) => {
+    setClick(!click);
+    dispatch(addToWishlist(data));
   };
 
   // Add item to cart
-  const addToCartHandler = (productId) => {
-    const isItemInCart = cart && cart.some((item) => item._id === productId);
-
-    if (isItemInCart) {
+  const addToCartHandler = (id) => {
+    const isItemExists = cart && cart.find((i) => i._id === id);
+    if (isItemExists) {
       toast.error("This item is already in your cart!");
-    } else if (data.stock < 1) {
-      toast.error("Sorry, the product stock is limited!");
     } else {
-      const cartData = { ...data, qty: 1 };
-      dispatch(addTocart(cartData));
-      toast.success("Item added to cart successfully!");
+      if (data.stock < 1) {
+        toast.error("Sorry, the product stock is limited!");
+      } else {
+        const cartData = { ...data, qty: 1 };
+        dispatch(addTocart(cartData));
+        toast.success("Item added to cart successfully!");
+      }
     }
   };
 
@@ -89,14 +97,19 @@ const ProductCard = ({ data, isEvent }) => {
           <Ratings rating={data?.ratings} />
 
           <div className="flex items-center justify-between mt-2">
-            <div className={`${styles.productDiscountPrice}`}>
-              {data.originalPrice === 0 ? data.originalPrice : data.discountPrice}$
+            <div className="flex">
+              <h5 className={`${styles.productDiscountPrice}`}>
+                {data.originalPrice === 0
+                  ? data.originalPrice
+                  : data.discountPrice}
+                $
+              </h5>
+              {data.originalPrice ? (
+                <h4 className={`${styles.price} text-gray-500 ml-2`}>
+                  {data.originalPrice}$
+                </h4>
+              ) : null}
             </div>
-            {data.originalPrice ? (
-              <div className={`${styles.price} text-gray-500 ml-2`}>
-                {data.originalPrice}$
-              </div>
-            ) : null}
             <span className="font-medium text-sm text-yellow-500">
               {data?.sold_out} sold
             </span>
@@ -116,14 +129,14 @@ const ProductCard = ({ data, isEvent }) => {
         ) : (
           <AiOutlineHeart
             size={22}
-            className="cursor-pointer hover:text-red-600 transition duration-300 ease-in-out"
+            className=" cursor-pointer hover:text-red-600 transition duration-300 ease-in-out"
             onClick={() => addToWishlistHandler(data)}
             title="Add to wishlist"
           />
         )}
         <AiOutlineShoppingCart
           size={25}
-          className="cursor-pointer hover-text-green-500 transition duration-300 ease-in-out"
+          className="cursor-pointer hover:text-green-500 transition duration-300 ease-in-out"
           onClick={() => addToCartHandler(data._id)}
           title="Add to cart"
         />
@@ -135,8 +148,8 @@ const ProductCard = ({ data, isEvent }) => {
         />
       </div>
 
-      {/* Render product details card */
-      open ? <ProductDetailsCard setOpen={setOpen} data={data} /> : null}
+      {/* Render product details card */}
+      {open ? <ProductDetailsCard setOpen={setOpen} data={data} /> : null}
     </div>
   );
 };
